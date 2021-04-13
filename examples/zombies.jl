@@ -42,15 +42,15 @@ function initialise(; map_path = TEST_MAP)
 
     for id in 1:100
         start = random_position(model) # At an intersection
-        finish = random_road_position(model) # Somewhere on a road
-        route = plan_route(start, finish, model)
+        finish = osm_random_road_position(model) # Somewhere on a road
+        route = osm_plan_route(start, finish, model)
         human = Zombie(id, start, route, finish, false)
         add_agent_pos!(human, model)
     end
     ## We'll add patient zero at a specific (latitude, longitude)
-    start = road((39.52320181536525, -119.78917553184259), model)
-    finish = intersection((39.510773, -119.75916700000002), model)
-    route = plan_route(start, finish, model)
+    start = osm_road((39.52320181536525, -119.78917553184259), model)
+    finish = osm_intersection((39.510773, -119.75916700000002), model)
+    route = osm_plan_route(start, finish, model)
     ## This function call creates & adds an agent, see `add_agent!`
     zombie = add_agent!(start, model, route, finish, true)
     return model
@@ -62,13 +62,13 @@ end
 
 function agent_step!(agent, model)
     ## Each agent will progress 25 meters along their route
-    move_along_route!(agent, model, 25)
+    move_agent!(agent, model, 25)
 
-    if is_stationary(agent, model) && rand(model.rng) < 0.1
+    if osm_is_stationary(agent, model) && rand(model.rng) < 0.1
         ## When stationary, give the agent a 10% chance of going somewhere else
-        random_route!(agent, model)
+        osm_random_route!(agent, model)
         ## Start on new route
-        move_along_route!(agent, model, 25)
+        move_agent!(agent, model, 25)
     end
 
     if agent.infected
@@ -97,7 +97,7 @@ function plotagents(model)
     colors = [ac(model[i]) for i in ids]
     sizes = [as(model[i]) for i in ids]
     markers = :circle
-    pos = [map_coordinates(model[i], model) for i in ids]
+    pos = [osm_map_coordinates(model[i], model) for i in ids]
 
     scatter!(
         pos;
